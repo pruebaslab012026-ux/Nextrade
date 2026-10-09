@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>🏢 Nextrade — Oficina IA</title>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<style>
+  :root {
+    --bg: #0f1117;
+    --bg-soft: #161822;
+    --bg-card: #1c1f2b;
+    --border: #262a38;
+    --text: #e5e7eb;
+    --text-soft: #9ca3af;
+    --text-mute: #6b7280;
+    --accent: #f5c518;
+    --accent-soft: rgba(245, 197, 24, 0.12);
+    --green: #22c55e;
+    --red: #ef4444;
+    --blue: #60a5fa;
+    --radius: 14px;
+    --shadow: 0 8px 24px rgba(0,0,0,.35);
+    --transition: .18s ease;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif;
+    background: radial-gradient(1200px 600px at 20% -10%, #1a1d2b 0%, var(--bg) 60%);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.55;
+    font-size: 15px;
+  }
+  header {
+    padding: 28px 32px 20px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(15,17,23,.7);
+    backdrop-filter: blur(14px);
+    position: sticky; top: 0; z-index: 50;
+  }
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .brand-logo {
+    width: 42px; height: 42px; border-radius: 12px;
+    background: linear-gradient(135deg, var(--accent), #e0a800);
+    display: grid; place-items: center; font-size: 22px;
+    box-shadow: 0 0 24px rgba(245,197,24,.35);
+  }
+  .brand-text h1 { font-size: 20px; font-weight: 700; letter-spacing: -.3px; }
+  .brand-text p { font-size: 13px; color: var(--text-soft); }
+  .status { margin-left: auto; display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text-soft); }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--red); transition: var(--transition); }
+  .dot.online { background: var(--green); box-shadow: 0 0 10px var(--green); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.55} }
+
+  .btn-open {
+    background: linear-gradient(135deg, var(--accent), #e0a800);
+    color: #1a1d2b; border: none; padding: 10px 18px;
+    border-radius: 10px; font-weight: 600; font-size: 13px;
+    cursor: pointer; transition: var(--transition);
+    box-shadow: 0 4px 14px rgba(245,197,24,.3);
+    margin-left: 16px;
+  }
+  .btn-open:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(245,197,24,.45); }
+  .btn-open:active { transform: translateY(0); }
+
+  nav.tabs {
+    display: flex; gap: 6px; padding: 16px 32px 0;
+    border-bottom: 1px solid var(--border); overflow-x: auto;
+    background: rgba(15,17,23,.5); backdrop-filter: blur(10px);
+    position: sticky; top: 91px; z-index: 40;
+  }
+  nav.tabs button {
+    background: transparent; border: 1px solid transparent;
+    color: var(--text-soft); padding: 10px 18px;
+    border-radius: 10px 10px 0 0; cursor: pointer;
+    font-size: 14px; font-weight: 500; white-space: nowrap;
+    transition: var(--transition); border-bottom: 2px solid transparent;
+  }
+  nav.tabs button:hover { color: var(--text); background: rgba(255,255,255,.03); }
+  nav.tabs button.active {
+    color: var(--accent); border-bottom-color: var(--accent);
+    background: linear-gradient(180deg, transparent, var(--accent-soft));
+  }
+
+  main { max-width: 1100px; margin: 0 auto; padding: 32px; }
+  .panel { display: none; animation: fadeIn .25s ease; }
+  .panel.active { display: block; }
+  @keyframes fadeIn { from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:translateY(0)} }
+
+  .card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 28px 32px;
+    box-shadow: var(--shadow);
+  }
+  .card h1 { font-size: 22px; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+  .card h2 { font-size: 17px; color: var(--accent); margin: 22px 0 10px; font-weight: 600; }
+  .card h3 { font-size: 15px; color: var(--blue); margin: 18px 0 8px; font-weight: 600; }
+  .card p { margin: 8px 0; color: var(--text); }
+  .card ul, .card ol { margin: 8px 0 8px 22px; color: var(--text); }
+  .card li { margin: 4px 0; }
+  .card code {
+    background: #0a0c12; padding: 2px 6px; border-radius: 5px;
+    font-family: "SF Mono", Consolas, monospace; font-size: 13px;
+    color: var(--accent); border: 1px solid var(--border);
+  }
+  .card pre {
+    background: #0a0c12; padding: 16px; border-radius: 10px;
+    overflow-x: auto; border: 1px solid var(--border); margin: 10px 0;
+  }
+  .card pre code { background: transparent; border: none; padding: 0; color: var(--text); }
+  .card a { color: var(--accent); text-decoration: none; border-bottom: 1px dashed rgba(245,197,24,.4); }
+  .card a:hover { border-bottom-style: solid; }
+  .card blockquote {
+    border-left: 3px solid var(--accent); padding: 8px 16px;
+    margin: 10px 0; background: var(--accent-soft);
+    border-radius: 0 8px 8px 0; color: var(--text-soft); font-style: italic;
+  }
+  .card table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
+  .card th, .card td { padding: 10px 14px; border: 1px solid var(--border); text-align: left; }
+  .card th { background: var(--bg-soft); color: var(--accent); font-weight: 600; }
+  .card tr:hover { background: rgba(255,255,255,.02); }
+  .card hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+  .toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-left: 4px solid var(--accent); padding: 14px 20px;
+    border-radius: 10px; box-shadow: var(--shadow); font-size: 14px;
+    opacity: 0; transform: translateY(20px); transition: var(--transition);
+    pointer-events: none; z-index: 100;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast strong { color: var(--accent); }
+
+  .empty {
+    text-align: center; padding: 80px 20px; color: var(--text-mute);
+  }
+  .empty-icon { font-size: 64px; margin-bottom: 20px; opacity: .7; }
+  .empty h2 { color: var(--text); font-size: 20px; margin-bottom: 10px; }
+  .empty p { color: var(--text-soft); max-width: 480px; margin: 0 auto 24px; font-size: 14px; }
+  .empty .btn-open { margin: 0 auto; font-size: 14px; padding: 12px 24px; }
+
+  .loading { text-align: center; padding: 60px 20px; color: var(--text-mute); font-size: 14px; }
+  .spinner {
+    width: 32px; height: 32px; border: 3px solid var(--border);
+    border-top-color: var(--accent); border-radius: 50%;
+    margin: 0 auto 14px; animation: spin .8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @media (max-width: 720px) {
+    header { padding: 20px; }
+    nav.tabs { padding: 12px 20px 0; top: 82px; }
+    main { padding: 20px; }
+    .card { padding: 20px; }
+    .brand-text h1 { font-size: 17px; }
+    .brand-text p { font-size: 12px; }
+    .btn-open { padding: 8px 14px; font-size: 12px; margin-left: 10px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="brand-logo">🏢</div>
+    <div class="brand-text">
+      <h1>Nextrade — Oficina IA</h1>
+      <p id="subtitle">Centro de documentación multi-IA</p>
+    </div>
+    <div class="status">
+      <span class="dot" id="statusDot"></span>
+      <span id="statusText">Sin carpeta</span>
+    </div>
+    <button class="btn-open" id="btnOpen">📂 Abrir /docs-ia/</button>
+  </div>
+</header>
+
+<nav class="tabs" id="tabs" style="display:none;"></nav>
+
+<main id="main">
+  <div class="empty">
+    <div class="empty-icon">📂</div>
+    <h2>Selecciona tu carpeta /docs-ia/</h2>
+    <p>Haz clic en el botón para abrir la carpeta que contiene los archivos <code>.md</code> del proyecto Nextrade. La web los leerá y se actualizará sola cuando cambien.</p>
+    <button class="btn-open" id="btnOpenEmpty">📂 Abrir /docs-ia/</button>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+//  OFICINA IA — Nextrade
+//  Todo en un archivo. Usa File System Access API (Chrome/Edge).
+// ============================================================
+
+const ARCHIVOS = [
+  { id: 'ESTADO-ACTUAL', label: '📊 Estado Actual', file: 'ESTADO-ACTUAL.md' },
+  { id: 'CHANGELOG',     label: '📜 Changelog',     file: 'CHANGELOG.md' },
+  { id: 'PROYECTO',      label: '🗂️ Proyecto',      file: 'PROYECTO.md' },
+  { id: 'ROLES-IA',      label: '👥 Roles IA',      file: 'ROLES-IA.md' },
+  { id: 'REGLAS-IA',     label: '⚖️ Reglas IA',     file: 'REGLAS-IA.md' },
+  { id: 'README',        label: '📖 Readme',        file: 'README.md' },
+];
+
+const cache = {};
+let activo = ARCHIVOS[0].id;
+let dirHandle = null;
+let pollTimer = null;
+let ultimoHash = {};   // id → contenido previo (para detectar cambios)
+
+const tabsEl = document.getElementById('tabs');
+const mainEl = document.getElementById('main');
+const toastEl = document.getElementById('toast');
+const dot = document.getElementById('statusDot');
+const statusText = document.getElementById('statusText');
+const subtitle = document.getElementById('subtitle');
+
+// ---------- Tabs ----------
+ARCHIVOS.forEach(a => {
+  const btn = document.createElement('button');
+  btn.textContent = a.label;
+  btn.dataset.id = a.id;
+  btn.addEventListener('click', () => activar(a.id));
+  tabsEl.appendChild(btn);
+});
+
+function activar(id) {
+  activo = id;
+  document.querySelectorAll('#tabs button').forEach(b => {
+    b.classList.toggle('active', b.dataset.id === id);
+  });
+  render();
+}
+
+// ---------- Toast ----------
+let toastTimer;
+function toast(msg) {
+  toastEl.innerHTML = msg;
+  toastEl.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toastEl.classList.remove('show'), 3200);
+}
+
+// ---------- Render ----------
+function render() {
+  if (!dirHandle) return;
+  const archivo = ARCHIVOS.find(a => a.id === activo);
+  if (!archivo) return;
+
+  if (cache[activo]) {
+    mainEl.innerHTML = `<div class="card">${cache[activo]}</div>`;
+    return;
+  }
+  mainEl.innerHTML = `<div class="loading"><div class="spinner"></div>Cargando ${archivo.label}…</div>`;
+  leerArchivo(archivo).then(md => {
+    if (md === null) {
+      cache[activo] = `<h2>⚠️ No encontrado</h2><p>El archivo <code>${archivo.file}</code> no existe en la carpeta seleccionada.</p>`;
+    } else {
+      cache[activo] = marked.parse(md);
+    }
+    mainEl.innerHTML = `<div class="card">${cache[activo]}</div>`;
+  });
+}
+
+// ---------- Leer archivo del dirHandle ----------
+async function leerArchivo(archivo) {
+  try {
+    const fileHandle = await dirHandle.getFileHandle(archivo.file);
+    const file = await fileHandle.getFile();
+    const texto = await file.text();
+    ultimoHash[archivo.id] = texto;
+    return texto;
+  } catch (e) {
+    return null;
+  }
+}
+
+// ---------- Abrir carpeta ----------
+async function abrirCarpeta() {
+  if (!('showDirectoryPicker' in window)) {
+    alert('❌ Tu navegador no soporta File System Access API.\n\nUsa Chrome, Edge, Brave u Opera.');
+    return;
+  }
+  try {
+    dirHandle = await window.showDirectoryPicker({ mode: 'read' });
+    subtitle.textContent = `📂 ${dirHandle.name}`;
+    dot.classList.add('online');
+    statusText.textContent = 'En vivo';
+    tabsEl.style.display = 'flex';
+    cacheClear();
+    activar(ARCHIVOS[0].id);
+    iniciarPolling();
+    toast('✅ Carpeta abierta. <strong>Monitoreando cambios…</strong>');
+  } catch (e) {
+    // Usuario canceló
+  }
+}
+
+function cacheClear() {
+  for (const k in cache) delete cache[k];
+}
+
+// ---------- Polling: detecta cambios cada 2s ----------
+function iniciarPolling() {
+  clearInterval(pollTimer);
+  pollTimer = setInterval(async () => {
+    if (!dirHandle) return;
+    for (const a of ARCHIVOS) {
+      const md = await leerArchivo(a);
+      if (md === null) continue;
+      const prev = ultimoHash[a.id];
+      if (prev !== undefined && prev !== md) {
+        delete cache[a.id];
+        toast(`✏️ <strong>${a.label}</strong> actualizado`);
+        if (a.id === activo) render();
+      }
+    }
+  }, 2000);
+}
+
+// ---------- Botones ----------
+document.getElementById('btnOpen').addEventListener('click', abrirCarpeta);
+document.getElementById('btnOpenEmpty').addEventListener('click', abrirCarpeta);
+
+// ============================================================
+</script>
+</body>
+</html>
